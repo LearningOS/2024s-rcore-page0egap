@@ -4,6 +4,7 @@ use crate::{
     task::{exit_current_and_run_next, suspend_current_and_run_next, TaskStatus},
     timer::get_time_us,
 };
+use crate::task::current_task_info;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -21,6 +22,17 @@ pub struct TaskInfo {
     syscall_times: [u32; MAX_SYSCALL_NUM],
     /// Total running time of task
     time: usize,
+}
+
+impl TaskInfo {
+    /// Create a TaskInfo with given parameters
+    pub fn new(status: TaskStatus, syscall_times: [u32; MAX_SYSCALL_NUM], time: usize) -> Self {
+        TaskInfo {
+            status,
+            syscall_times,
+            time
+        }
+    }
 }
 
 /// task exits and submit an exit code
@@ -51,7 +63,8 @@ pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
 }
 
 /// YOUR JOB: Finish sys_task_info to pass testcases
-pub fn sys_task_info(_ti: *mut TaskInfo) -> isize {
+pub fn sys_task_info(ti: *mut TaskInfo) -> isize {
     trace!("kernel: sys_task_info");
-    -1
+    unsafe { *ti = current_task_info(); }
+    0
 }
